@@ -154,7 +154,7 @@ class PaymentController extends Controller
         $serverRequestData['data']['iban'] = $requestData['nn_sepa_iban'];
         // Handles Guarantee and Normal Payment           
             
-        $guranteeStatus = $this->paymentService->getGuaranteeStatus($this->basketRepository->load(), $requestData['paymentKey']);                        
+        $guranteeStatus = $this->paymentService->getGuaranteeStatus($this->basketRepository->load());                        
             
             if('guarantee' == $guranteeStatus)
             {
