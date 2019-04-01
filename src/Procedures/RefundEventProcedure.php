@@ -110,7 +110,7 @@ class RefundEventProcedure
 					
 			    $response = $this->paymentHelper->executeCurl($paymentRequestData, NovalnetConstants::PAYPORT_URL);
 				$responseData =$this->paymentHelper->convertStringToArray($response['response'], '&');
-				
+				$this->getLogger(__METHOD__)->error('response', $responseData);
 				if ($responseData['status'] == '100') {
 					$paymentData['currency']    = $paymentDetails[0]->currency;
 					$paymentData['paid_amount'] = (float) $orderAmount;
@@ -119,8 +119,10 @@ class RefundEventProcedure
 					$paymentData['type']        = 'debit';
 					$paymentData['mop']         = $paymentDetails[0]->mopId;
 
-					 $this->paymentHelper->createPlentyPayment($paymentData);	
-					 $transactionComments = PHP_EOL . (!empty ($responseData['tid'])) ? sprintf($this->paymentHelper->getTranslatedText('refund_message_new_tid', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount, $responseData['tid'].'Hello World') : sprintf($this->paymentHelper->getTranslatedText('refund_message', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount);
+					 $this->paymentHelper->createPlentyPayment($paymentData);
+					$this->getLogger(__METHOD__)->error('res', $responseData);
+					$this->getLogger(__METHOD__)->error('tid', $responseData['tid']);
+					 $transactionComments = PHP_EOL . (!empty($responseData['tid'])) ? sprintf($this->paymentHelper->getTranslatedText('refund_message_new_tid', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount, $responseData['tid'].'Hello World') : sprintf($this->paymentHelper->getTranslatedText('refund_message', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount);
 					 $this->paymentHelper->createOrderComments((int)$order->id, $transactionComments);
 					
 				} else {
