@@ -145,7 +145,6 @@ class NovalnetServiceProvider extends ServiceProvider
                     if($paymentHelper->getPaymentKeyByMop($event->getMop()))
                     {		
 						$paymentKey = $paymentHelper->getPaymentKeyByMop($event->getMop());	
-						$guaranteeStatus = $paymentService->getGuaranteeStatus($basketRepository->load(), $paymentKey);
 						$basket = $basketRepository->load();			
 						$billingAddressId = $basket->customerInvoiceAddressId;
 						$address = $addressRepository->findAddressById($billingAddressId);
@@ -179,7 +178,7 @@ class NovalnetServiceProvider extends ServiceProvider
 						}  elseif($paymentKey == 'NOVALNET_SEPA') {
                                 $paymentProcessUrl = $paymentService->getProcessPaymentUrl();
                                 $contentType = 'htmlContent';
-                                $guaranteeStatus = $paymentService->getGuaranteeStatus($basketRepository->load(), $paymentKey);
+                                $guaranteeStatus = $paymentService->getGuaranteeStatus($basketRepository->load());
                                 if($guaranteeStatus != 'normal' && $guaranteeStatus != 'guarantee')
                                 {
                                     $contentType = 'errorCode';
