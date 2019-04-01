@@ -506,17 +506,16 @@ class PaymentService
     * @param string $paymentKey
     * @return string
     */
-    public function getGuaranteeStatus(Basket $basket, $paymentKey)
+    public function getGuaranteeStatus(Basket $basket)
     {
-        // Get payment name in lowercase
-        $paymentKeyLow = strtolower((string) $paymentKey);
-        $guaranteePayment = $this->config->get('Novalnet.'.$paymentKeyLow.'_payment_guarantee_active');
+        
+        $guaranteePayment = $this->config->get('Novalnet.novalnet_sepa_payment_guarantee_active');
         if ($guaranteePayment == 'true') {
             // Get guarantee minimum amount value
-            $minimumAmount = $this->paymentHelper->getNovalnetConfig($paymentKeyLow . '_guarantee_min_amount');
+            $minimumAmount = $this->paymentHelper->getNovalnetConfig('novalnet_sepa_guarantee_min_amount');
             $minimumAmount = ((preg_match('/^[0-9]*$/', $minimumAmount) && $minimumAmount >= '999')  ? $minimumAmount : '999');
             $amount        = (sprintf('%0.2f', $basket->basketAmount) * 100);
-
+            $this->getLogger(__METHOD__)->error('minamount', $minimumAmount);
             $billingAddressId = $basket->customerInvoiceAddressId;
             $billingAddress = $this->addressRepository->findAddressById($billingAddressId);
             $customerBillingIsoCode = strtoupper($this->countryRepository->findIsoCode($billingAddress->countryId, 'iso_code_2'));
@@ -558,7 +557,7 @@ class PaymentService
             ) && $basket->currency == 'EUR' && ($addressValidation || ($billingAddress === $shippingAddress)))
             )) {
                 $processingType = 'guarantee';
-            } elseif ($this->config->get('Novalnet.'.$paymentKeyLow.'_payment_guarantee_force_active') == 'true') {   
+            } elseif ($this->config->get('Novalnet.novalnet_sepa_payment_guarantee_force_active') == 'true') {   
                 $processingType = 'normal';
             } else {
                 if ( ! in_array( $customerBillingIsoCode, array( 'AT', 'DE', 'CH' ), true ) ) {
