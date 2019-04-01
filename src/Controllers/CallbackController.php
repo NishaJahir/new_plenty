@@ -452,6 +452,7 @@ class CallbackController extends Controller
 							
 							$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float) $orderStatus);
 							//$transactionDetails = $this->paymentService->getInvoicePrepaymentComments($invoicePrepaymentDetails);
+							$transactionDetails = 'sample';
 							$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments.'</br>'.$transactionDetails );		            
 					} elseif ( in_array ( $this->aryCaptureParams['payment_type'], [ 'GUARANTEED_DIRECT_DEBIT_SEPA', 'DIRECT_DEBIT_SEPA' ] ) ) {
 							  
