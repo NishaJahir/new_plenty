@@ -121,12 +121,11 @@ class RefundEventProcedure
 
 					 $this->paymentHelper->createPlentyPayment($paymentData);
 					
-					$childtid = !empty($responseData['tid']) ? $responseData['tid']: '';
-					$transactionComments = PHP_EOL .sprintf($this->paymentHelper->getTranslatedText('refund_message', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount); 
-					if (!empty($childtid)) {
-						$this->getLogger(__METHOD__)->error('childtid', $childtid);
+					if (!empty($responseData['tid'])) {
 						$transactionComments = PHP_EOL . sprintf($this->paymentHelper->getTranslatedText('refund_message_new_tid', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount, $responseData['tid']);
-					 }
+					} else {
+						$transactionComments = PHP_EOL . sprintf($this->paymentHelper->getTranslatedText('refund_message', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) $orderAmount);
+					}
 					 
 					 $this->paymentHelper->createOrderComments((int)$order->id, $transactionComments);
 					
