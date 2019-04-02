@@ -59,7 +59,7 @@ class CreatePaymentMethods
     {
         $this->createNovalnetPaymentMethodByPaymentKey('NOVALNET_SEPA', 'Novalnet Direct Debit SEPA');
         $this->createNovalnetPaymentMethodByPaymentKey('NOVALNET_PAYPAL', 'Novalnet PayPal');
-      $this->createNovalnetPaymentMethodByPaymentKey('NOVALNET_IDEAL', 'Novalnet Ideal');
+      
     }
 
 
