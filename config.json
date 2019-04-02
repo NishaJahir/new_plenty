@@ -133,69 +133,7 @@
             }
          }
       },
-      "Config.NovalnetiDealTab":{  
-		 "label":"Config.NovalnetiDealTab",
-		 "formFields":{  
-			"novalnet_ideal_payment_active":{  
-			   "type":"checkBox",
-			   "required":false,
-			   "label":"Config.paymentActiveLabel",
-			   "options":{  
-				  "defaultValue":false
-			   }
-			},
-			"novalnet_ideal_test_mode":{  
-			   "type":"checkBox",
-			   "required":false,
-			   "label":"Config.testModeLabel",
-			   "options":{  
-				  "defaultValue":false
-			   }
-			},
-			"novalnet_ideal_payment_name":{  
-			   "type":"inputText",
-			   "required":false,
-			   "label":"Config.paymentNameLabel",
-			   "options":{  
-				  "defaultValue":""
-			   }
-			},
-			"novalnet_ideal_description":{  
-			   "type":"inputText",
-			   "required":false,
-			   "label":"Config.paymentDescriptionLabel",
-			   "options":{  
-				  "defaultValue":""
-			   }
-			},
-			"novalnet_ideal_order_completion_status":{  
-			   "type":"inputText",
-			   "required":false,
-			   "label":"Config.orderCompletionStatusLabel",
-			   "options":{  
-				  "defaultValue":"7.1"
-			   }
-			},
-			"novalnet_ideal_reference1":{  
-			   "type":"inputText",
-			   "required":false,
-			   "label":"Config.reference1Label",
-			   "options":{  
-				  "tooltip":"Config.novalnetReferenceTooltip",
-				  "defaultValue":""
-			   }
-			},
-			"novalnet_ideal_reference2":{  
-			   "type":"inputText",
-			   "required":false,
-			   "label":"Config.reference2Label",
-			   "options":{  
-				  "tooltip":"Config.novalnetReferenceTooltip",
-				  "defaultValue":""
-			   }
-			}
-		 }
-	  },
+      
       "Config.NovalnetDirectDebitSEPATab":{  
          "label":"Config.NovalnetDirectDebitSEPATab",
          "formFields":{  
