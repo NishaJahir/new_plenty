@@ -86,32 +86,24 @@ class CallbackController extends Controller
 	 * @var aryPayments
 	 * @Array Type of payment available - Level : 0
 	 */
-	protected $aryPayments = ['CREDITCARD', 'INVOICE_START', 'DIRECT_DEBIT_SEPA', 'GUARANTEED_INVOICE', 'GUARANTEED_DIRECT_DEBIT_SEPA', 'PAYPAL', 'ONLINE_TRANSFER', 'IDEAL', 'GIROPAY', 'PRZELEWY24', 'EPS', 'CASHPAYMENT'];
+	protected $aryPayments = ['DIRECT_DEBIT_SEPA', 'GUARANTEED_DIRECT_DEBIT_SEPA', 'PAYPAL'];
 
 	/**
 	 * @var aryChargebacks
 	 * @Array Type of Chargebacks available - Level : 1
 	 */
-	protected $aryChargebacks = ['PRZELEWY24_REFUND', 'RETURN_DEBIT_SEPA', 'REVERSAL', 'CREDITCARD_BOOKBACK', 'CREDITCARD_CHARGEBACK', 'PAYPAL_BOOKBACK', 'REFUND_BY_BANK_TRANSFER_EU', 'CASHPAYMENT_REFUND', 'GUARANTEED_INVOICE_BOOKBACK', 'GUARANTEED_SEPA_BOOKBACK'];
+	protected $aryChargebacks = ['REVERSAL', 'RETURN_DEBIT_SEPA', 'PAYPAL_BOOKBACK', 'REFUND_BY_BANK_TRANSFER_EU', 'GUARANTEED_SEPA_BOOKBACK'];
 
 	/**
 	 * @var aryCollection
 	 * @Array Type of CreditEntry payment and Collections available - Level : 2
 	 */
-	protected $aryCollection = ['INVOICE_CREDIT', 'CREDIT_ENTRY_CREDITCARD', 'CREDIT_ENTRY_SEPA', 'CREDIT_ENTRY_DE', 'DEBT_COLLECTION_SEPA', 'DEBT_COLLECTION_CREDITCARD', 'CASHPAYMENT_CREDIT', 'DEBT_COLLECTION_DE', 'ONLINE_TRANSFER_CREDIT'];
+	protected $aryCollection = ['CREDIT_ENTRY_SEPA', 'CREDIT_ENTRY_DE', 'DEBT_COLLECTION_SEPA', 'DEBT_COLLECTION_DE'];
 
 	/**
 	 * @var aryPaymentGroups
 	 */
 	protected $aryPaymentGroups = [
-			'novalnet_cc'   => [
-							'CREDITCARD',
-							'CREDITCARD_BOOKBACK',
-							'CREDITCARD_CHARGEBACK',
-							'CREDIT_ENTRY_CREDITCARD',
-							'DEBT_COLLECTION_CREDITCARD',
-							'SUBSCRIPTION_STOP',
-						],
 			'novalnet_sepa'  => [
 							'DIRECT_DEBIT_SEPA',
 							'RETURN_DEBIT_SEPA',
@@ -124,77 +116,13 @@ class CallbackController extends Controller
 							'REVERSAL',
 							'SUBSCRIPTION_STOP',
 						],
-			'novalnet_invoice' => [
-							'INVOICE_START',
-							'GUARANTEED_INVOICE',
-							'INVOICE_CREDIT',
-							'GUARANTEED_INVOICE_BOOKBACK',
-							'REVERSAL',
-							'TRANSACTION_CANCELLATION',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REFUND_BY_BANK_TRANSFER_EU',
-							'SUBSCRIPTION_STOP'
-						],
-			'novalnet_prepayment'   => [
-							'INVOICE_START',
-							'INVOICE_CREDIT',
-							'REVERSAL',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REFUND_BY_BANK_TRANSFER_EU',
-							'SUBSCRIPTION_STOP'
-						],
-			'novalnet_cashpayment'  => [
-							'CASHPAYMENT',
-							'CASHPAYMENT_CREDIT',
-							'CASHPAYMENT_REFUND',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REVERSAL'
-						],
-			'novalnet_sofort' => [
-							'ONLINE_TRANSFER',
-							'REVERSAL',
-							'ONLINE_TRANSFER_CREDIT',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REFUND_BY_BANK_TRANSFER_EU'
-						],
 			'novalnet_paypal'=> [
 							'PAYPAL',
 							'SUBSCRIPTION_STOP',
 							'PAYPAL_BOOKBACK',
 							'REFUND_BY_BANK_TRANSFER_EU'
 						],
-			'novalnet_ideal' => [
-							'IDEAL',
-							'REVERSAL',
-							'ONLINE_TRANSFER_CREDIT',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REFUND_BY_BANK_TRANSFER_EU'
-						],
-			'novalnet_eps'   => [
-							'EPS',
-							'ONLINE_TRANSFER_CREDIT',
-							'REVERSAL',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REFUND_BY_BANK_TRANSFER_EU'
-						],
-			'novalnet_giropay'    => [
-							'GIROPAY',
-							'ONLINE_TRANSFER_CREDIT',
-							'REVERSAL',
-							'CREDIT_ENTRY_DE',
-							'DEBT_COLLECTION_DE',
-							'REFUND_BY_BANK_TRANSFER_EU'
-						],
-			'novalnet_przelewy' => [
-							'PRZELEWY24',
-							'PRZELEWY24_REFUND'
-						],
+			
 			];
 
 	/**
@@ -291,7 +219,6 @@ class CallbackController extends Controller
 		
 			if ($this->aryCaptureParams['payment_type'] == 'TRANSACTION_CANCELLATION')
 			{
-				$transactionStatus = $this->payment_details($nnTransactionHistory->orderNo);
 				$callbackComments  = '</br>';
 				$callbackComments .= '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_transaction_cancellation',$orderLanguage),date('d.m.Y'), date('H:i:s'));
 				$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float) $this->config->get('Novalnet.novalnet_order_cancel_status'));
@@ -301,62 +228,17 @@ class CallbackController extends Controller
 			}
 			if($this->getPaymentTypeLevel() == 2 && $this->aryCaptureParams['tid_status'] == '100')
 			{
-				// Credit entry for the payment types Invoice, Prepayment and Cashpayment.
-				if(in_array($this->aryCaptureParams['payment_type'], ['INVOICE_CREDIT', 'CASHPAYMENT_CREDIT', 'ONLINE_TRANSFER_CREDIT']))
-				{
-						if ($nnTransactionHistory->order_paid_amount < $nnTransactionHistory->order_total_amount)
-						{
-							$callbackComments  = '</br>';
-							$callbackComments .= sprintf($this->paymentHelper->getTranslatedText('callback_initial_execution',$orderLanguage), $this->aryCaptureParams['shop_tid'], ($this->aryCaptureParams['amount'] / 100), $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ).'</br>';
+				$callbackComments  = '</br>';
+				$callbackComments .= sprintf($this->paymentHelper->getTranslatedText('callback_initial_execution',$orderLanguage), $this->aryCaptureParams['shop_tid'], ($this->aryCaptureParams['amount'] / 100), $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ).'</br>';
+				$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);		
+				$this->sendCallbackMail($callbackComments);
+				return $this->renderTemplate($callbackComments);
 
-							if($nnTransactionHistory->order_total_amount <= ($nnTransactionHistory->order_paid_amount + $this->aryCaptureParams['amount']))
-							{
-								$paymentConfigName = substr($nnTransactionHistory->paymentName, 9);
-								$orderStatus = $this->config->get('Novalnet.novalnet_' . $paymentConfigName . '_callback_order_status');
-								$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float)$orderStatus);
-							}
-
-							$this->saveTransactionLog($nnTransactionHistory);
-
-							$paymentData['currency']    = $this->aryCaptureParams['currency'];
-							$paymentData['paid_amount'] = (float) ($this->aryCaptureParams['amount'] / 100);
-							$paymentData['tid']         = $this->aryCaptureParams['tid'];
-							$paymentData['order_no']    = $nnTransactionHistory->orderNo;
-							$paymentData['mop']         = $nnTransactionHistory->mopId;
-							$this->paymentHelper->createPlentyPayment($paymentData);
-							$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);
-							$this->sendCallbackMail($callbackComments);
-							return $this->renderTemplate($callbackComments);
-						} elseif ($this->aryCaptureParams['payment_type'] == 'ONLINE_TRANSFER_CREDIT') {
-							$paymentData['currency']    = $this->aryCaptureParams['currency'];
-							$paymentData['paid_amount'] = (float) ($this->aryCaptureParams['amount'] / 100);
-							$paymentData['tid']         = $this->aryCaptureParams['tid'];
-							$paymentData['order_no']    = $nnTransactionHistory->orderNo;
-							$paymentData['mop']         = $nnTransactionHistory->mopId;
-							$this->paymentHelper->createPlentyPayment($paymentData);
-							$callbackComments  = '</br>';
-							$callbackComments .= sprintf($this->paymentHelper->getTranslatedText('callback_status_change',$orderLanguage), (float) ($this->aryCaptureParams['amount'] / 100), $nnTransactionHistory->orderNo );
-							$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);
-							return $this->renderTemplate($callbackComments);
-						} 
-						else
-						{
-							return $this->renderTemplate('Novalnet callback received. Callback Script executed already. Refer Order :'.$nnTransactionHistory->orderNo);
-						}
-				}
-				else
-				{
-							$callbackComments  = '</br>';
-							$callbackComments .= sprintf($this->paymentHelper->getTranslatedText('callback_initial_execution',$orderLanguage), $this->aryCaptureParams['shop_tid'], ($this->aryCaptureParams['amount'] / 100), $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ).'</br>';
-							$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);		
-							$this->sendCallbackMail($callbackComments);
-							return $this->renderTemplate($callbackComments);
-				}
 			}
 			else if($this->getPaymentTypeLevel() == 1 && $this->aryCaptureParams['tid_status'] == 100)
 			{
 				$callbackComments = '</br>';
-				$callbackComments .= (in_array($this->aryCaptureParams['payment_type'], ['CREDITCARD_BOOKBACK', 'PAYPAL_BOOKBACK', 'REFUND_BY_BANK_TRANSFER_EU', 'PRZELEWY24_REFUND', 'CASHPAYMENT_REFUND', 'GUARANTEED_INVOICE_BOOKBACK', 'GUARANTEED_SEPA_BOOKBACK'])) ? sprintf($this->paymentHelper->getTranslatedText('callback_bookback_execution',$orderLanguage), $nnTransactionHistory->tid, sprintf('%0.2f', ($this->aryCaptureParams['amount']/100)) , $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ) . '</br>' : sprintf( $this->paymentHelper->getTranslatedText('callback_chargeback_execution',$orderLanguage), $nnTransactionHistory->tid, sprintf( '%0.2f',( $this->aryCaptureParams['amount']/100) ), $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ) . '</br>';
+				$callbackComments .= (in_array($this->aryCaptureParams['payment_type'], ['PAYPAL_BOOKBACK', 'REFUND_BY_BANK_TRANSFER_EU', 'GUARANTEED_SEPA_BOOKBACK'])) ? sprintf($this->paymentHelper->getTranslatedText('callback_bookback_execution',$orderLanguage), $nnTransactionHistory->tid, sprintf('%0.2f', ($this->aryCaptureParams['amount']/100)) , $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ) . '</br>' : sprintf( $this->paymentHelper->getTranslatedText('callback_chargeback_execution',$orderLanguage), $nnTransactionHistory->tid, sprintf( '%0.2f',( $this->aryCaptureParams['amount']/100) ), $this->aryCaptureParams['currency'], date('Y-m-d H:i:s'), $this->aryCaptureParams['tid'] ) . '</br>';
 
 				$this->saveTransactionLog($nnTransactionHistory);
 
@@ -374,7 +256,7 @@ class CallbackController extends Controller
 			}
 			elseif($this->getPaymentTypeLevel() == 0 )
 			{
-				if(in_array($this->aryCaptureParams['payment_type'], ['PAYPAL','PRZELEWY24']) && $this->aryCaptureParams['status'] == '100' && $this->aryCaptureParams['tid_status'] == '100')
+				if($this->aryCaptureParams['payment_type'] == 'PAYPAL' && $this->aryCaptureParams['status'] == '100' && $this->aryCaptureParams['tid_status'] == '100')
 				{
 					if ($nnTransactionHistory->order_paid_amount < $nnTransactionHistory->order_total_amount)
 					{
@@ -388,12 +270,9 @@ class CallbackController extends Controller
 						$paymentData['tid']         = $this->aryCaptureParams['tid'];
 						$paymentData['order_no']    = $nnTransactionHistory->orderNo;
 						$paymentData['mop']         = $nnTransactionHistory->mopId;
-						if($this->aryCaptureParams['payment_type'] == 'PRZELEWY24') {
-							$orderStatus = (float) $this->config->get('Novalnet.novalnet_przelewy_order_completion_status');
-						} else {
-							$orderStatus = (float) $this->config->get('Novalnet.novalnet_paypal_order_completion_status');
-						}
-
+						
+						$orderStatus = (float) $this->config->get('Novalnet.novalnet_paypal_order_completion_status');
+						
 						$this->paymentHelper->createPlentyPayment($paymentData);
 						
 						$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, $orderStatus);
@@ -407,12 +286,12 @@ class CallbackController extends Controller
 					{
 						return $this->renderTemplate('Novalnet Callbackscript received. Order already Paid');
 					}
-				}  elseif (in_array($this->aryCaptureParams['payment_type'], ['INVOICE_START', 'GUARANTEED_INVOICE', 'DIRECT_DEBIT_SEPA', 'GUARANTEED_DIRECT_DEBIT_SEPA'] )) {
+				}  elseif (in_array($this->aryCaptureParams['payment_type'], ['DIRECT_DEBIT_SEPA', 'GUARANTEED_DIRECT_DEBIT_SEPA'] )) {
 				
 					$transactionStatus = $this->payment_details($nnTransactionHistory->orderNo);
 			               
 					// Checks for Guarantee Onhold
-					if(in_array($this->aryCaptureParams['tid_status'], ['91', '99']) && $transactionStatus == '75') {
+					if($this->aryCaptureParams['tid_status'] == '99' && $transactionStatus == '75') {
 					   
 						$callbackComments = '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_pending_to_onhold_status_change',$orderLanguage), $this->aryCaptureParams['tid'], date('d.m.Y'), date('H:i:s'));
 						
@@ -420,71 +299,25 @@ class CallbackController extends Controller
 						$orderStatus = $this->config->get('Novalnet.novalnet_onhold_confirmation_status'); 
 						$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float)$orderStatus);
 			
-					} elseif ($this->aryCaptureParams['tid_status'] == '100' && in_array($transactionStatus, [ '75', '91', '99' ])) {
-						$paymentConfigName = substr($nnTransactionHistory->paymentName, 9);
-						$orderStatus = $this->config->get('Novalnet.novalnet_'.$paymentConfigName.'_order_completion_status');	
-						
-					// Checks Guaranteed Invoice
-						if( in_array ( $this->aryCaptureParams['payment_type'], [ 'GUARANTEED_INVOICE', 'INVOICE_START' ] ) ) {
-						    $paymentDetails = $this->payment_details($nnTransactionHistory->orderNo, true);
-							$bankDetails = json_decode($paymentDetails);
-							$invoicePrepaymentDetails =  [
-								  'invoice_bankname'  => $bankDetails->invoice_bankname,
-								  'invoice_bankplace' => $bankDetails->invoice_bankplace,
-								  'amount'            => $this->aryCaptureParams['amount'] / 100,
-								  'currency'          => $this->aryCaptureParams['currency'],
-								  'tid'               => $this->aryCaptureParams['tid'],
-								  'invoice_iban'      => $bankDetails->invoice_iban,
-								  'invoice_bic'       => $bankDetails->invoice_bic,
-								  'due_date'          => $this->aryCaptureParams['due_date'],
-								  'product'           => $this->aryCaptureParams['product_id'],
-								  'order_no'          => $nnTransactionHistory->orderNo,
-								  'tid_status'        => $this->aryCaptureParams['tid_status'],
-								  'invoice_type'      => 'INVOICE',
-								  'invoice_account_holder' => $bankDetails->invoice_account_holder
-								];
-							// Checking for Invoice Guarantee
-							
-							$callbackComments = '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_order_confirmation_text',$orderLanguage), date('d.m.Y'), date('H:i:s'));               			    
-							if (in_array($transactionStatus, ['75', '91']) && $this->aryCaptureParams['tid_status'] == '100' && $this->aryCaptureParams['payment_type'] == 'GUARANTEED_INVOICE') {
-								$orderStatus = $this->config->get('Novalnet.novalnet_invoice_callback_order_status'); 
-							}	
-							
-							$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float) $orderStatus);
-							//$transactionDetails = $this->paymentService->getInvoicePrepaymentComments($invoicePrepaymentDetails);
-							$transactionDetails = 'sample';
-							$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments.'</br>'.$transactionDetails );		            
-					} elseif ( in_array ( $this->aryCaptureParams['payment_type'], [ 'GUARANTEED_DIRECT_DEBIT_SEPA', 'DIRECT_DEBIT_SEPA' ] ) ) {
-							  
-								$callbackComments = '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_order_confirmation_text',$orderLanguage), $this->aryCaptureParams['tid'], date('d.m.Y'), date('H:i:s'));
-								$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);
-								if ($transactionStatus == '75' && $this->aryCaptureParams['tid_status'] == '100') {
-									$orderStatus = $this->config->get('Novalnet.novalnet_sepa_order_completion_status'); 
-								}
-								$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float)$orderStatus);
-							}
-							if(in_array ( $this->aryCaptureParams['payment_type'], [ 'GUARANTEED_DIRECT_DEBIT_SEPA', 'DIRECT_DEBIT_SEPA', 'GUARANTEED_INVOICE'] )) {
+					} elseif ($this->aryCaptureParams['tid_status'] == '100' && in_array($transactionStatus, [ '75', '99' ])) {
+				
+						$orderStatus = $this->config->get('Novalnet.novalnet_sepa_order_completion_status');	
+
+							$callbackComments = '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_order_confirmation_text',$orderLanguage), $this->aryCaptureParams['tid'], date('d.m.Y'), date('H:i:s'));
+							$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);
+							$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, (float)$orderStatus);
+
 							$paymentData['currency']    = $this->aryCaptureParams['currency'];
 							$paymentData['paid_amount'] = (float) ($this->aryCaptureParams['amount'] / 100);
 							$paymentData['tid']         = $this->aryCaptureParams['tid'];
 							$paymentData['order_no']    = $nnTransactionHistory->orderNo;
 							$paymentData['mop']         = $nnTransactionHistory->mopId;
 							$this->paymentHelper->createPlentyPayment($paymentData);
-							}
 							$this->sendTransactionConfirmMail($callbackComments, $transactionDetails, $nnTransactionHistory->orderNo); 
 					} 
 					$this->paymentHelper->updatePayments($this->aryCaptureParams['tid'], $this->aryCaptureParams['tid_status'], $nnTransactionHistory->orderNo);
 					return $this->renderTemplate($callbackComments);
-				}  elseif('PRZELEWY24' == $this->aryCaptureParams['payment_type'] && (!in_array($this->aryCaptureParams['tid_status'], ['100','86']) || '100' != $this->aryCaptureParams['status'])){
-					// Przelewy24 cancel.
-					$callbackComments = '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_transaction_cancellation',$orderLanguage),date('d.m.Y'), date('H:i:s') ) . '</br>';
-					$orderStatus = (float) $this->config->get('Novalnet.novalnet_order_cancel_status');
-					$this->paymentHelper->updateOrderStatus($nnTransactionHistory->orderNo, $orderStatus);
-					$this->paymentHelper->updatePayments($this->aryCaptureParams['tid'], $this->aryCaptureParams['tid_status'], $nnTransactionHistory->orderNo);
-					$this->paymentHelper->createOrderComments($nnTransactionHistory->orderNo, $callbackComments);
-					$this->sendCallbackMail($callbackComments);
-					return $this->renderTemplate($callbackComments);
-				}
+				}  
 				else
 				{
 					$error = 'Novalnet Callbackscript received. Payment type ( '.$this->aryCaptureParams['payment_type'].' ) is not applicable for this process!';
@@ -807,7 +640,7 @@ class CallbackController extends Controller
 
 	{
 		$orderlanguage = $this->orderLanguage($orderObj);
-		if(in_array($this->aryCaptureParams['payment_type'], ['PAYPAL', 'ONLINE_TRANSFER', 'IDEAL', 'GIROPAY', 'PRZELEWY24', 'EPS','CREDITCARD'])) {
+		if($this->aryCaptureParams['payment_type'] == 'PAYPAL') {
 		foreach($orderObj->properties as $property)
 		{
 			if($property->typeId == '3' && $this->paymentHelper->getPaymentKeyByMop($property->value))
