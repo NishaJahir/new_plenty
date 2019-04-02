@@ -36,6 +36,7 @@ use Plenty\Plugin\ConfigRepository;
 
 use Novalnet\Methods\NovalnetSepaPaymentMethod;
 use Novalnet\Methods\NovalnetPaypalPaymentMethod;
+use Novalnet\Methods\NovalnetIdealPaymentMethod;
 
 use Plenty\Modules\EventProcedures\Services\Entries\ProcedureEntry;
 use Plenty\Modules\EventProcedures\Services\EventProceduresService;
