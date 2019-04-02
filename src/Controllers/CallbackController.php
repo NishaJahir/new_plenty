@@ -658,7 +658,7 @@ class CallbackController extends Controller
 				
 				$requestData['amount'] = (float) $requestData['amount']/100;
 
-				if( in_array($this->aryCaptureParams['status'], [90,100])  && in_array($this->aryCaptureParams['tid_status'], [85,86,90,100]))
+				if( in_array($this->aryCaptureParams['status'], [90,100])  && in_array($this->aryCaptureParams['tid_status'], [85,90,100]))
 				{
 					$this->paymentService->executePayment($requestData);
 					$this->saveTransactionLog($transactionData);
