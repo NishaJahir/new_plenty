@@ -185,22 +185,27 @@ class PaymentService
     {
         try {
             if(!$callbackfailure &&  in_array($requestData['status'], ['100', '90'])) {
+		    $this->getLogger(__METHOD__)->error('call1', 'enter');
 				if($requestData['tid_status'] == '90') {
+					$this->getLogger(__METHOD__)->error('call2', 'enter');
 					$requestData['order_status'] = trim($this->config->get('Novalnet.novalnet_paypal_payment_pending_status'));
 					$requestData['paid_amount'] = 0;
 				} elseif($requestData['tid_status'] == '75') {
+					$this->getLogger(__METHOD__)->error('call3', 'enter');
 					$requestData['order_status'] = trim($this->config->get('Novalnet.novalnet_sepa_payment_guarantee_status'));
 					$requestData['paid_amount'] = 0;
 				} elseif(in_array($requestData['tid_status'], ['85', '99'])) {
+					$this->getLogger(__METHOD__)->error('call4', 'enter');
 					$requestData['order_status'] = trim($this->config->get('Novalnet.novalnet_onhold_confirmation_status'));
 					$requestData['paid_amount'] = 0;
 				} 
 				else {
-					$this->getLogger(__METHOD__)->error('call1', 'enter');
+					$this->getLogger(__METHOD__)->error('call5', 'enter');
 					$requestData['order_status'] = trim($this->config->get('Novalnet.'. $requestData['payment_method'] .'_order_completion_status'));
 					$requestData['paid_amount'] = ($requestData['tid_status'] == '100') ? $requestData['amount'] : '0';
 				}
             } else {
+		    $this->getLogger(__METHOD__)->error('call6', 'enter');
                 $requestData['order_status'] = trim($this->config->get('Novalnet.novalnet_order_cancel_status'));
                 $requestData['paid_amount'] = '0';
             }
