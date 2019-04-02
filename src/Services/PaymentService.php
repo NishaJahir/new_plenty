@@ -119,7 +119,7 @@ class PaymentService
 		$notifications = json_decode($this->sessionStorage->getPlugin()->getValue('notifications'), true);	
 		
 		$notification = [
-            'message'       => $message,
+            'message'       => ($type == 'success') ? '&check; '.$message : '&cross; '.$message,
             'code'          => $code,
             'stackTrace'    => []
            ];
