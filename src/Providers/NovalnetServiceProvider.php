@@ -101,12 +101,7 @@ class NovalnetServiceProvider extends ServiceProvider
                 AfterBasketItemAdd::class,
                 AfterBasketCreate::class
             ]);
-	    $payContainer->register('plenty_novalnet::NOVALNET_IDEAL', NovalnetIdealPaymentMethod::class,
-            [
-                AfterBasketChanged::class,
-                AfterBasketItemAdd::class,
-                AfterBasketCreate::class
-            ]);
+	
             
 		// Event for Onhold - Capture Process
 		$captureProcedureTitle = [
