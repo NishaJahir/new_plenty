@@ -196,6 +196,7 @@ class PaymentService
 					$requestData['paid_amount'] = 0;
 				} 
 				else {
+					$this->getLogger(__METHOD__)->error('call1', 'enter');
 					$requestData['order_status'] = trim($this->config->get('Novalnet.'. $requestData['payment_method'] .'_order_completion_status'));
 					$requestData['paid_amount'] = ($requestData['tid_status'] == '100') ? $requestData['amount'] : '0';
 				}
