@@ -660,6 +660,7 @@ class CallbackController extends Controller
 
 				if( in_array($this->aryCaptureParams['status'], [90,100])  && in_array($this->aryCaptureParams['tid_status'], [85,90,100]))
 				{
+					$this->getLogger(__METHOD__)->error('call', 'enter');
 					$this->paymentService->executePayment($requestData);
 					$this->saveTransactionLog($transactionData);
 
